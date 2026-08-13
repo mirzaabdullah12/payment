@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HPay - Payment</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f5f5f5; min-height: 100vh; }
+        .top-header { background: #111; color: white; text-align: center; padding: 1rem; font-size: 1.4rem; font-weight: 700; }
+        .amount-bar { background: #f97316; color: white; text-align: center; padding: 1rem 2rem; font-size: 1.1rem; font-weight: 700; }
+        .main-content { width: 100%; padding: 1.5rem; }
+        .section-card { background: white; border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .section-title { font-size: 0.95rem; font-weight: 600; color: #333; }
+        .timer { color: #f59e0b; font-weight: 600; font-size: 0.95rem; }
+        .method-row { display: flex; justify-content: space-between; align-items: center; padding: 0.85rem 0.5rem; border-bottom: 1px solid #f3f4f6; cursor: pointer; border-radius: 8px; transition: background 0.15s; }
+        .method-row:last-child { border-bottom: none; }
+        .method-row:hover { background: #f9fafb; }
+        .method-name { font-size: 0.95rem; font-weight: 600; }
+        .method-name.paytm { color: #00BAF2; }
+        .method-name.phonepe { color: #5f259f; }
+        .bell-icon { font-size: 1.1rem; }
+        .upi-qr-section { background: white; border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: flex; gap: 2rem; align-items: flex-start; }
+        .upi-left { flex: 1; }
+        .upi-label { font-size: 0.85rem; font-weight: 600; color: #333; margin-bottom: 0.6rem; }
+        .upi-id-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+        .upi-id-box { border: 1px solid #e5e7eb; border-radius: 8px; padding: 0.6rem 0.9rem; font-size: 0.85rem; color: #374151; flex: 1; background: #fafafa; outline: none; }
+        .upi-id-box:focus { border-color: #3b82f6; background: white; }
+        .copy-btn { background: #3b82f6; color: white; border: none; border-radius: 8px; padding: 0.6rem 1rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
+        .copy-btn:hover { background: #2563eb; }
+        .tip-text { color: #ef4444; font-size: 0.78rem; margin-bottom: 1rem; }
+        .utr-label { font-size: 0.85rem; font-weight: 600; color: #333; margin-bottom: 0.5rem; }
+        .utr-input { width: 100%; border: 1px solid #e5e7eb; border-radius: 8px; padding: 0.7rem 1rem; font-size: 0.85rem; color: #374151; margin-bottom: 0.75rem; outline: none; }
+        .utr-input:focus { border-color: #3b82f6; }
+        .submit-utr-btn { width: 100%; background: #3b82f6; color: white; border: none; border-radius: 8px; padding: 0.85rem; font-size: 0.95rem; font-weight: 700; cursor: pointer; }
+        .submit-utr-btn:hover { background: #2563eb; }
+        .qr-right { text-align: center; min-width: 160px; }
+        .qr-title { font-size: 0.8rem; font-weight: 600; color: #333; margin-bottom: 0.5rem; }
+        #qrcode { width: 150px; height: 150px; border: 2px solid #e5e7eb; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: white; }
+        #qrcode img, #qrcode canvas { width: 150px !important; height: 150px !important; }
+        .qr-note { font-size: 0.7rem; color: #9ca3af; margin-top: 0.4rem; }
+        .other-options { background: white; border-radius: 12px; padding: 1.25rem 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .other-title { font-size: 0.85rem; font-weight: 600; color: #333; margin-bottom: 1rem; }
+        .other-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; }
+        .other-btn { border: 1px solid #e5e7eb; border-radius: 8px; padding: 0.7rem 0.5rem; text-align: center; font-size: 0.8rem; font-weight: 600; color: #374151; cursor: pointer; background: white; transition: all 0.2s; text-decoration: none; display: block; }
+        .other-btn:hover { border-color: #3b82f6; background: #eff6ff; color: #1d4ed8; }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999; align-items: center; justify-content: center; }
+        .modal-overlay.show { display: flex; }
+        .modal-box { background: white; border-radius: 16px; padding: 2.5rem 2rem; max-width: 360px; width: 90%; text-align: center; }
+        .success-icon { width: 70px; height: 70px; background: #dcfce7; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; font-size: 2rem; }
+        .modal-title { font-size: 1.3rem; font-weight: 700; color: #111; margin-bottom: 0.5rem; }
+        .modal-amount { font-size: 1.8rem; font-weight: 800; color: #f97316; margin-bottom: 0.5rem; }
+        .modal-sub { color: #6b7280; font-size: 0.875rem; margin-bottom: 1.5rem; }
+        .modal-close-btn { background: linear-gradient(135deg, #f97316, #ea580c); color: white; border: none; border-radius: 10px; padding: 0.9rem 2.5rem; font-size: 1rem; font-weight: 700; cursor: pointer; width: 100%; }
+        @media (max-width: 600px) {
+            .upi-qr-section { flex-direction: column; }
+            .other-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="top-header">HPay</div>
+<div class="amount-bar" id="amountBar">Amount Payable ₹0.00</div>
+
+<div class="main-content">
+
+    <!-- Payment Methods -->
+    <div class="section-card">
+        <div class="section-header">
+            <span class="section-title">Select Payment Method</span>
+            <span class="timer" id="timer">05:00</span>
+        </div>
+        <div class="method-row" onclick="openPaytm()" style="cursor:pointer;">
+            <span class="method-name paytm">Paytm</span>
+            <span class="bell-icon">🔔</span>
+        </div>
+        <div class="method-row" onclick="openPhonePe()" style="cursor:pointer;">
+            <span class="method-name phonepe">PhonePe</span>
+            <span class="bell-icon">🔔</span>
+        </div>
+    </div>
+
+    <!-- UPI + QR -->
+    <div class="upi-qr-section">
+        <div class="upi-left">
+            <div class="upi-label">Copy UPI ID</div>
+            <div class="upi-id-row">
+                <input type="text" class="upi-id-box" id="upiIdInput" value="ranjanharsh005@oksbi" readonly>
+                <button class="copy-btn" onclick="copyUPI()">Copy</button>
+            </div>
+            <p class="tip-text">Tip: This payment session is valid for a limited time.</p>
+            <div class="utr-label">Submit UTR</div>
+            <input type="text" class="utr-input" id="utrInput" placeholder="Enter 12-digit UTR" maxlength="12">
+            <button class="submit-utr-btn" onclick="submitUTR()">Submit UTR</button>
+        </div>
+        <div class="qr-right">
+            <div class="qr-title">Scan & Pay</div>
+            <div id="qrcode"></div>
+            <div class="qr-note">Enter UPI ID to generate QR</div>
+        </div>
+    </div>
+
+    <!-- Other Apps -->
+    <div class="other-options">
+        <div class="other-title">Other Payment Options</div>
+        <div class="other-grid">
+            <a class="other-btn" href="#" onclick="openGPay(); return false;">Google Pay</a>
+            <a class="other-btn" href="#" onclick="openBHIM(); return false;">BHIM UPI</a>
+            <a class="other-btn" href="#" onclick="openAmazon(); return false;">Amazon Pay</a>
+            <a class="other-btn" href="#" onclick="openAny(); return false;">Any Banking App</a>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal-overlay" id="successModal">
+    <div class="modal-box">
+        <div class="success-icon">✅</div>
+        <div class="modal-title">Payment Submitted!</div>
+        <div class="modal-amount" id="modalAmount">₹0.00</div>
+        <div class="modal-sub">Your UTR has been submitted. We will verify and confirm shortly.</div>
+        <button class="modal-close-btn" onclick="closeModal()">Done</button>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+    const params  = new URLSearchParams(window.location.search);
+    const amount  = parseFloat(params.get('amount') || '0').toFixed(2);
+    const fmt     = parseFloat(amount).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+    const upiId   = 'ranjanharsh005@oksbi';
+
+    document.getElementById('amountBar').textContent  = 'Amount Payable ₹' + fmt;
+    document.getElementById('modalAmount').textContent = '₹' + fmt;
+
+    // ── QR — generate immediately on load with amount ──
+    function generateQR(id) {
+        const qrEl = document.getElementById('qrcode');
+        qrEl.innerHTML = '';
+        document.querySelector('.qr-note').textContent = '';
+        const link = `upi://pay?pa=${encodeURIComponent(id)}&am=${amount}&cu=INR&tn=Payment`;
+        new QRCode(qrEl, { text: link, width: 150, height: 150, colorDark: '#000', colorLight: '#fff', correctLevel: QRCode.CorrectLevel.M });
+    }
+
+    generateQR(upiId);
+
+    // ── Timer ────────────────────────────────────────────
+    let secs = 300;
+    const timerEl = document.getElementById('timer');
+    const iv = setInterval(() => {
+        if (secs <= 0) { clearInterval(iv); timerEl.textContent = '00:00'; return; }
+        secs--;
+        timerEl.textContent = String(Math.floor(secs/60)).padStart(2,'0') + ':' + String(secs%60).padStart(2,'0');
+    }, 1000);
+
+    // ── UPI deep-link helper ──────────────────────────────
+    // On mobile: opens the app directly.
+    // On desktop: falls back to web URL where available.
+    function upiLink(scheme, upiId) {
+        return `${scheme}?pa=${encodeURIComponent(upiId)}&am=${amount}&cu=INR&tn=Payment`;
+    }
+
+    // ── App openers ──────────────────────────────────────
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    const isIOS     = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const isMobile  = isAndroid || isIOS;
+
+    // Android intent:// opens app chooser — most reliable
+    function openWithIntent(upiUrl) {
+        if (isAndroid) {
+            // intent scheme opens UPI app chooser on Android
+            const intentUrl = `intent://pay?${upiUrl.split('?')[1]}#Intent;scheme=upi;package=;end`;
+            window.location.href = intentUrl;
+        } else if (isIOS) {
+            window.location.href = `upi://${upiUrl.replace('upi://', '')}`;
+        } else {
+            // Desktop — show info
+            alert('UPI payments work on mobile. Please open this page on your phone to pay via app.');
+        }
+    }
+
+    function buildUpiParams() {
+        return `pa=${encodeURIComponent(upiId)}&am=${amount}&cu=INR&tn=Payment`;
+    }
+
+    // Fallback URL encoded for intent
+    const fallback = encodeURIComponent(`http://192.168.18.102:60154/payment-success.html?amount=${amount}`);
+
+    function openPaytm() {
+        if (isAndroid) {
+            window.location.href = `intent://pay?${buildUpiParams()}#Intent;scheme=upi;package=net.one97.paytm;S.browser_fallback_url=${fallback};end`;
+        } else if (isIOS) {
+            window.location.href = `paytmmp://pay?${buildUpiParams()}`;
+        } else {
+            window.open(`https://paytm.com`, '_blank');
+        }
+    }
+
+    function openPhonePe() {
+        if (isAndroid) {
+            window.location.href = `intent://pay?${buildUpiParams()}#Intent;scheme=upi;package=com.phonepe.app;S.browser_fallback_url=${fallback};end`;
+        } else if (isIOS) {
+            window.location.href = `phonepe://pay?${buildUpiParams()}`;
+        } else {
+            window.open(`https://www.phonepe.com`, '_blank');
+        }
+    }
+
+    function openGPay() {
+        if (isAndroid) {
+            window.location.href = `intent://pay?${buildUpiParams()}#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;S.browser_fallback_url=${fallback};end`;
+        } else if (isIOS) {
+            window.location.href = `tez://upi/pay?${buildUpiParams()}`;
+        } else {
+            window.open(`https://pay.google.com`, '_blank');
+        }
+    }
+
+    function openBHIM() {
+        if (isAndroid) {
+            window.location.href = `intent://pay?${buildUpiParams()}#Intent;scheme=upi;package=in.org.npci.upiapp;S.browser_fallback_url=${fallback};end`;
+        } else if (isIOS) {
+            window.location.href = `upi://pay?${buildUpiParams()}`;
+        } else {
+            window.open(`https://www.bhimupi.org.in`, '_blank');
+        }
+    }
+
+    function openAmazon() {
+        if (isAndroid) {
+            window.location.href = `intent://pay?${buildUpiParams()}#Intent;scheme=upi;package=in.amazon.mShop.android.shopping;S.browser_fallback_url=${fallback};end`;
+        } else if (isIOS) {
+            window.location.href = `amazonpay://pay?${buildUpiParams()}`;
+        } else {
+            window.open(`https://www.amazon.in/pay`, '_blank');
+        }
+    }
+
+    function openAny() {
+        if (isAndroid) {
+            window.location.href = `intent://pay?${buildUpiParams()}#Intent;scheme=upi;S.browser_fallback_url=${fallback};end`;
+        } else if (isIOS) {
+            window.location.href = `upi://pay?${buildUpiParams()}`;
+        } else {
+            alert('UPI payments work on mobile. Please open this page on your phone.');
+        }
+    }
+
+    // ── Copy ─────────────────────────────────────────────
+    function copyUPI() {
+        navigator.clipboard.writeText(upiId).then(() => {
+            const btn = document.querySelector('.copy-btn');
+            btn.textContent = 'Copied!';
+            setTimeout(() => btn.textContent = 'Copy', 2000);
+        });
+    }
+
+    // ── Submit UTR ────────────────────────────────────────
+    function submitUTR() {
+        const utr = document.getElementById('utrInput').value.trim();
+        if (utr.length < 12) { alert('Please enter a valid 12-digit UTR number.'); return; }
+        document.getElementById('successModal').classList.add('show');
+    }
+
+    function closeModal() {
+        document.getElementById('successModal').classList.remove('show');
+        window.location.href = 'index.html';
+    }
+</script>
+</body>
+</html>
