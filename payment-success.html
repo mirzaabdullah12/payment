@@ -73,14 +73,14 @@
             <span class="section-title">Select Payment Method</span>
             <span class="timer" id="timer">05:00</span>
         </div>
-        <div class="method-row" onclick="openPaytm()" style="cursor:pointer;">
-            <span class="method-name paytm">Paytm</span>
-            <span class="bell-icon">🔔</span>
-        </div>
-        <div class="method-row" onclick="openPhonePe()" style="cursor:pointer;">
+        <a class="method-row" href="phonepe://pay?pa=ranjanharsh005@oksbi&pn=HARSH%20RANJAN&am=0&cu=INR" id="phonepeLink" style="text-decoration:none;">
             <span class="method-name phonepe">PhonePe</span>
             <span class="bell-icon">🔔</span>
-        </div>
+        </a>
+        <a class="method-row" href="paytmmp://pay?pa=ranjanharsh005@oksbi&pn=HARSH%20RANJAN&am=0&cu=INR" id="paytmLink" style="text-decoration:none;">
+            <span class="method-name paytm">Paytm</span>
+            <span class="bell-icon">🔔</span>
+        </a>
     </div>
 
     <!-- UPI + QR -->
@@ -107,10 +107,10 @@
     <div class="other-options">
         <div class="other-title">Other Payment Options</div>
         <div class="other-grid">
-            <a class="other-btn" href="#" onclick="openGPay(); return false;">Google Pay</a>
-            <a class="other-btn" href="#" onclick="openBHIM(); return false;">BHIM UPI</a>
-            <a class="other-btn" href="#" onclick="openAmazon(); return false;">Amazon Pay</a>
-            <a class="other-btn" href="#" onclick="openAny(); return false;">Any Banking App</a>
+            <a class="other-btn" id="gpayLink" href="tez://upi/pay?pa=ranjanharsh005@oksbi&pn=HARSH%20RANJAN&am=0&cu=INR">Google Pay</a>
+            <a class="other-btn" id="bhimLink" href="upi://pay?pa=ranjanharsh005@oksbi&pn=HARSH%20RANJAN&am=0&cu=INR">BHIM UPI</a>
+            <a class="other-btn" id="amazonLink" href="amazonpay://pay?pa=ranjanharsh005@oksbi&pn=HARSH%20RANJAN&am=0&cu=INR">Amazon Pay</a>
+            <a class="other-btn" id="anyLink" href="upi://pay?pa=ranjanharsh005@oksbi&pn=HARSH%20RANJAN&am=0&cu=INR">Any Banking App</a>
         </div>
     </div>
 </div>
@@ -136,6 +136,16 @@
     document.getElementById('amountBar').textContent  = 'Amount Payable ₹' + fmt;
     document.getElementById('modalAmount').textContent = '₹' + fmt;
 
+    // Update Paytm & PhonePe links with actual amount
+    document.getElementById('phonepeLink').href = `phonepe://pay?pa=ranjanharsh005@oksbi&pn=HARSH%20RANJAN&am=${amount}&cu=INR`;
+    document.getElementById('paytmLink').href   = `paytmmp://pay?pa=ranjanharsh005@oksbi&pn=HARSH%20RANJAN&am=${amount}&cu=INR`;
+
+    // Other app links
+    document.getElementById('gpayLink').href   = `tez://upi/pay?pa=ranjanharsh005@oksbi&pn=HARSH%20RANJAN&am=${amount}&cu=INR`;
+    document.getElementById('bhimLink').href   = `upi://pay?pa=ranjanharsh005@oksbi&pn=HARSH%20RANJAN&am=${amount}&cu=INR`;
+    document.getElementById('amazonLink').href = `amazonpay://pay?pa=ranjanharsh005@oksbi&pn=HARSH%20RANJAN&am=${amount}&cu=INR`;
+    document.getElementById('anyLink').href    = `upi://pay?pa=ranjanharsh005@oksbi&pn=HARSH%20RANJAN&am=${amount}&cu=INR`;
+
     // ── QR — generate immediately on load with amount ──
     function generateQR(id) {
         const qrEl = document.getElementById('qrcode');
@@ -155,99 +165,6 @@
         secs--;
         timerEl.textContent = String(Math.floor(secs/60)).padStart(2,'0') + ':' + String(secs%60).padStart(2,'0');
     }, 1000);
-
-    // ── UPI deep-link helper ──────────────────────────────
-    // On mobile: opens the app directly.
-    // On desktop: falls back to web URL where available.
-    function upiLink(scheme, upiId) {
-        return `${scheme}?pa=${encodeURIComponent(upiId)}&am=${amount}&cu=INR&tn=Payment`;
-    }
-
-    // ── App openers ──────────────────────────────────────
-    const isAndroid = /Android/i.test(navigator.userAgent);
-    const isIOS     = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-    const isMobile  = isAndroid || isIOS;
-
-    // Android intent:// opens app chooser — most reliable
-    function openWithIntent(upiUrl) {
-        if (isAndroid) {
-            // intent scheme opens UPI app chooser on Android
-            const intentUrl = `intent://pay?${upiUrl.split('?')[1]}#Intent;scheme=upi;package=;end`;
-            window.location.href = intentUrl;
-        } else if (isIOS) {
-            window.location.href = `upi://${upiUrl.replace('upi://', '')}`;
-        } else {
-            // Desktop — show info
-            alert('UPI payments work on mobile. Please open this page on your phone to pay via app.');
-        }
-    }
-
-    function buildUpiParams() {
-        return `pa=${encodeURIComponent(upiId)}&am=${amount}&cu=INR&tn=Payment`;
-    }
-
-    // Fallback URL encoded for intent
-    const fallback = encodeURIComponent(`http://192.168.18.102:60154/payment-success.html?amount=${amount}`);
-
-    function openPaytm() {
-        if (isAndroid) {
-            window.location.href = `intent://pay?${buildUpiParams()}#Intent;scheme=upi;package=net.one97.paytm;S.browser_fallback_url=${fallback};end`;
-        } else if (isIOS) {
-            window.location.href = `paytmmp://pay?${buildUpiParams()}`;
-        } else {
-            window.open(`https://paytm.com`, '_blank');
-        }
-    }
-
-    function openPhonePe() {
-        if (isAndroid) {
-            window.location.href = `intent://pay?${buildUpiParams()}#Intent;scheme=upi;package=com.phonepe.app;S.browser_fallback_url=${fallback};end`;
-        } else if (isIOS) {
-            window.location.href = `phonepe://pay?${buildUpiParams()}`;
-        } else {
-            window.open(`https://www.phonepe.com`, '_blank');
-        }
-    }
-
-    function openGPay() {
-        if (isAndroid) {
-            window.location.href = `intent://pay?${buildUpiParams()}#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;S.browser_fallback_url=${fallback};end`;
-        } else if (isIOS) {
-            window.location.href = `tez://upi/pay?${buildUpiParams()}`;
-        } else {
-            window.open(`https://pay.google.com`, '_blank');
-        }
-    }
-
-    function openBHIM() {
-        if (isAndroid) {
-            window.location.href = `intent://pay?${buildUpiParams()}#Intent;scheme=upi;package=in.org.npci.upiapp;S.browser_fallback_url=${fallback};end`;
-        } else if (isIOS) {
-            window.location.href = `upi://pay?${buildUpiParams()}`;
-        } else {
-            window.open(`https://www.bhimupi.org.in`, '_blank');
-        }
-    }
-
-    function openAmazon() {
-        if (isAndroid) {
-            window.location.href = `intent://pay?${buildUpiParams()}#Intent;scheme=upi;package=in.amazon.mShop.android.shopping;S.browser_fallback_url=${fallback};end`;
-        } else if (isIOS) {
-            window.location.href = `amazonpay://pay?${buildUpiParams()}`;
-        } else {
-            window.open(`https://www.amazon.in/pay`, '_blank');
-        }
-    }
-
-    function openAny() {
-        if (isAndroid) {
-            window.location.href = `intent://pay?${buildUpiParams()}#Intent;scheme=upi;S.browser_fallback_url=${fallback};end`;
-        } else if (isIOS) {
-            window.location.href = `upi://pay?${buildUpiParams()}`;
-        } else {
-            alert('UPI payments work on mobile. Please open this page on your phone.');
-        }
-    }
 
     // ── Copy ─────────────────────────────────────────────
     function copyUPI() {
